@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>医学研究样本量计算器</title>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">⚕</span>
+      <div>
+        <div class="logo-title">医学研究样本量计算器</div>
+        <div class="logo-subtitle">Medical Sample Size Calculator</div>
+      </div>
+    </div>
+    <nav class="nav-tabs" id="navTabs">
+      <button class="nav-btn active" onclick="showSection('rct')">随机对照试验</button>
+      <button class="nav-btn" onclick="showSection('cross')">横断面调查</button>
+      <button class="nav-btn" onclick="showSection('cohort')">队列研究</button>
+      <button class="nav-btn" onclick="showSection('casecontrol')">病例对照</button>
+      <button class="nav-btn" onclick="showSection('prediction')">预测模型</button>
+    </nav>
+    <div class="theme-toggle" onclick="toggleTheme()" title="切换主题">
+      <span id="themeIcon">🌙</span>
+    </div>
+  </div>
+</header>
+
+<!-- 主内容 -->
+<main class="main">
+
+  <!-- ===== 随机对照试验 ===== -->
+  <section id="rct" class="section active">
+    <div class="section-header">
+      <h1 class="section-title">随机对照试验（RCT）样本量计算</h1>
+      <p class="section-desc">Randomized Controlled Trial — 基于 Chow SC et al. (2018) 第3版权威公式</p>
+    </div>
+
+    <!-- 子类型切换 -->
+    <div class="sub-tabs">
+      <button class="sub-btn active" id="rct-mean-btn" onclick="switchRCT('mean')">连续变量（均数比较）</button>
+      <button class="sub-btn" id="rct-prop-btn" onclick="switchRCT('prop')">二分类变量（率比较）</button>
+    </div>
+
+    <!-- RCT 均数 -->
+    <div id="rct-mean" class="calc-panel">
+      <div class="calc-layout">
+        <!-- 左：输入+结果 -->
+        <div class="calc-left">
+          <div class="card input-card">
+            <h3 class="card-title">📥 参数输入</h3>
+            <div class="param-grid">
+              <div class="param-item">
+                <label>显著性水平 α (单侧/双侧)</label>
+                <div class="input-row">
+                  <select id="rct_m_tail" onchange="calcRCTMean()">
+                    <option value="2">双侧检验</option>
+                    <option value="1">单侧检验</option>
+                  </select>
+                  <input type="number" id="rct_m_alpha" value="0.05" step="0.01" min="0.001" max="0.2" onchange="calcRCTMean()" oninput="calcRCTMean()">
+                </div>
+                <span class="param-hint">通常取 0.05（双侧）</span>
+              </div>
+              <div class="param-item">
+                <label>检验效能 1-β (Power)</label>
+                <input type="number" id="rct_m_power" value="0.80" step="0.05" min="0.5" max="0.99" onchange="calcRCTMean()" oninput="calcRCTMean()">
+                <span class="param-hint">通常取 0.80 或 0.90</span>
+              </div>
+              <div class="param-item">
+                <label>对照组均值 μ₁</label>
+                <input type="number" id="rct_m_mu1" value="50" onchange="calcRCTMean()" oninput="calcRCTMean()">
+                <span class="param-hint">基于前期研究或预试验</span>
+              </div>
+              <div class="param-item">
+                <label>试验组均值 μ₂（预期）</label>
+                <input type="number" id="rct_m_mu2" value="55" onchange="calcRCTMean()" oninput="calcRCTMean()">
+                <span class="param-hint">临床最小重要差值</span>
+              </div>
+              <div class="param-item">
+                <label>共同标准差 σ</label>
+                <input type="number" id="rct_m_sigma" value="10" min="0.01" onchange="calcRCTMean()" oninput="calcRCTMean()">
+                <span class="param-hint">两组标准差近似相等</span>
+              </div>
+              <div class="param-item">
+                <label>分配比例 k (试验:对照)</label>
+                <input type="number" id="rct_m_k" value="1" min="0.1" step="0.1" onchange="calcRCTMean()" oninput="calcRCTMean()">
+                <span class="param-hint">1 = 1:1 等比例分配</span>
+              </div>
+              <div class="param-item">
+                <label>脱落率 (%)</label>
+                <input type="number" id="rct_m_dropout" value="10" min="0" max="50" onchange="calcRCTMean()" oninput="calcRCTMean()">
+                <span class="param-hint">考虑失访/脱落调整</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card result-card" id="rct_m_result_card">
+            <h3 class="card-title">📊 计算结果</h3>
+            <div class="result-main">
+              <div class="result-num" id="rct_m_n_per">—</div>
+              <div class="result-label">每组样本量</div>
+            </div>
+            <div class="result-detail">
+              <div class="result-item"><span>总样本量</span><strong id="rct_m_n_total">—</strong></div>
+              <div class="result-item"><span>调整后（含脱落）</span><strong id="rct_m_n_adj">—</strong></div>
+              <div class="result-item"><span>效应量 d</span><strong id="rct_m_delta">—</strong></div>
+              <div class="result-item"><span>Z<sub>α/2</sub></span><strong id="rct_m_za">—</strong></div>
+              <div class="result-item"><span>Z<sub>β</sub></span><strong id="rct_m_zb">—</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右：公式+参考 -->
+        <div class="calc-right">
+          <div class="card formula-card">
+            <h3 class="card-title">📐 计算公式</h3>
+            <div class="formula-box">
+              <div class="formula-desc">两组独立样本均数比较（两样本t检验），对照组样本量：</div>
+              <div class="math-display">
+                \[n_1 = \frac{(z_{\alpha/2}+z_{\beta})^2 \sigma^2 (1+1/k)}{(\mu_1-\mu_2)^2}\]
+              </div>
+              <div class="formula-desc">试验组样本量：</div>
+              <div class="math-display">
+                \[n_2 = k \cdot n_1\]
+              </div>
+              <div class="formula-desc">考虑脱落率 d 调整：</div>
+              <div class="math-display">
+                \[n_{adj} = \frac{n}{1-d}\]
+              </div>
+            </div>
+            <div class="param-explain">
+              <h4>参数说明</h4>
+              <table class="param-table">
+                <tr><td><strong>α</strong></td><td>第一类错误概率（显著性水平），通常取 0.05</td></tr>
+                <tr><td><strong>β</strong></td><td>第二类错误概率，检验效能 = 1-β，通常取 0.80</td></tr>
+                <tr><td><strong>z<sub>α/2</sub></strong></td><td>标准正态分布 α/2 分位数（双侧检验）</td></tr>
+                <tr><td><strong>z<sub>β</sub></strong></td><td>标准正态分布 β 分位数</td></tr>
+                <tr><td><strong>μ₁, μ₂</strong></td><td>两组总体均值，δ = |μ₁-μ₂| 为期望检测的差值</td></tr>
+                <tr><td><strong>σ</strong></td><td>总体标准差（假设两组相等）</td></tr>
+                <tr><td><strong>k</strong></td><td>样本量分配比例 n₂/n₁</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="card ref-card">
+            <h3 class="card-title">📚 参考文献</h3>
+            <div class="ref-list">
+              <div class="ref-item">
+                <span class="ref-num">[1]</span>
+                <span>Chow SC, Shao J, Wang H, Lokhnygina Y. <em>Sample Size Calculations in Clinical Research</em>, 3rd ed. Chapman & Hall/CRC, 2018. Chapter 3, pp.51-56.</span>
+              </div>
+              <div class="ref-item">
+                <span class="ref-num">[2]</span>
+                <span>Fleiss JL, Levin B, Paik MC. <em>Statistical Methods for Rates and Proportions</em>, 3rd ed. Wiley, 2003.</span>
+              </div>
+              <div class="ref-item">
+                <span class="ref-num">[3]</span>
+                <span>Cohen J. <em>Statistical Power Analysis for the Behavioral Sciences</em>, 2nd ed. Lawrence Erlbaum, 1988.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 论文模板 -->
+      <div class="card template-card">
+        <h3 class="card-title">📝 论文方法描述模板</h3>
+        <div class="template-actions">
+          <button class="btn-copy" onclick="copyTemplate('rct_m_template')">📋 复制模板</button>
+        </div>
+        <div class="template-box" id="rct_m_template">请先输入参数并完成计算，模板将自动生成...</div>
+      </div>
+    </div>
+
+    <!-- RCT 率 -->
+    <div id="rct-prop" class="calc-panel" style="display:none">
+      <div class="calc-layout">
+        <div class="calc-left">
+          <div class="card input-card">
+            <h3 class="card-title">📥 参数输入</h3>
+            <div class="param-grid">
+              <div class="param-item">
+                <label>显著性水平 α</label>
+                <div class="input-row">
+                  <select id="rct_p_tail" onchange="calcRCTProp()">
+                    <option value="2">双侧检验</option>
+                    <option value="1">单侧检验</option>
+                  </select>
+                  <input type="number" id="rct_p_alpha" value="0.05" step="0.01" min="0.001" max="0.2" onchange="calcRCTProp()" oninput="calcRCTProp()">
+                </div>
+                <span class="param-hint">通常取 0.05（双侧）</span>
+              </div>
+              <div class="param-item">
+                <label>检验效能 1-β</label>
+                <input type="number" id="rct_p_power" value="0.80" step="0.05" min="0.5" max="0.99" onchange="calcRCTProp()" oninput="calcRCTProp()">
+                <span class="param-hint">通常取 0.80 或 0.90</span>
+              </div>
+              <div class="param-item">
+                <label>对照组事件率 p₁</label>
+                <input type="number" id="rct_p_p1" value="0.30" step="0.01" min="0.01" max="0.99" onchange="calcRCTProp()" oninput="calcRCTProp()">
+                <span class="param-hint">如0.30表示30%</span>
+              </div>
+              <div class="param-item">
+                <label>试验组事件率 p₂（预期）</label>
+                <input type="number" id="rct_p_p2" value="0.20" step="0.01" min="0.01" max="0.99" onchange="calcRCTProp()" oninput="calcRCTProp()">
+                <span class="param-hint">临床意义上的差值</span>
+              </div>
+              <div class="param-item">
+                <label>分配比例 k (试验:对照)</label>
+                <input type="number" id="rct_p_k" value="1" min="0.1" step="0.1" onchange="calcRCTProp()" oninput="calcRCTProp()">
+                <span class="param-hint">1 = 1:1 等比例分配</span>
+              </div>
+              <div class="param-item">
+                <label>脱落率 (%)</label>
+                <input type="number" id="rct_p_dropout" value="10" min="0" max="50" onchange="calcRCTProp()" oninput="calcRCTProp()">
+                <span class="param-hint">考虑失访/脱落调整</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card result-card">
+            <h3 class="card-title">📊 计算结果</h3>
+            <div class="result-main">
+              <div class="result-num" id="rct_p_n_per">—</div>
+              <div class="result-label">每组样本量</div>
+            </div>
+            <div class="result-detail">
+              <div class="result-item"><span>总样本量</span><strong id="rct_p_n_total">—</strong></div>
+              <div class="result-item"><span>调整后（含脱落）</span><strong id="rct_p_n_adj">—</strong></div>
+              <div class="result-item"><span>合并率 p̄</span><strong id="rct_p_pbar">—</strong></div>
+              <div class="result-item"><span>效应量 |p₁-p₂|</span><strong id="rct_p_delta">—</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="calc-right">
+          <div class="card formula-card">
+            <h3 class="card-title">📐 计算公式</h3>
+            <div class="formula-box">
+              <div class="formula-desc">两组独立样本率比较（卡方检验），基于正态近似：</div>
+              <div class="math-display">
+                \[n_1 = \frac{\left[z_{\alpha/2}\sqrt{(1+1/k)\bar{p}(1-\bar{p})} + z_{\beta}\sqrt{p_1(1-p_1)/1+p_2(1-p_2)/k}\right]^2}{(p_1-p_2)^2}\]
+              </div>
+              <div class="formula-desc">其中合并率：</div>
+              <div class="math-display">
+                \[\bar{p} = \frac{p_1 + k p_2}{1+k}\]
+              </div>
+              <div class="formula-desc">Fleiss (1981) 非连续性校正版本（更保守）：</div>
+              <div class="math-display">
+                \[n_{cc} = \frac{n}{4}\left[1+\sqrt{1+\frac{2(1+1/k)}{n|p_1-p_2|}}\right]^2\]
+              </div>
+            </div>
+            <div class="param-explain">
+              <h4>参数说明</h4>
+              <table class="param-table">
+                <tr><td><strong>p₁</strong></td><td>对照组事件率（基于文献或预试验）</td></tr>
+                <tr><td><strong>p₂</strong></td><td>试验组预期事件率（临床意义差值）</td></tr>
+                <tr><td><strong>p̄</strong></td><td>两组的加权合并率</td></tr>
+                <tr><td><strong>k</strong></td><td>样本量分配比例 n₂/n₁</td></tr>
+                <tr><td><strong>z<sub>α/2</sub></strong></td><td>双侧 α/2 标准正态分位数</td></tr>
+                <tr><td><strong>z<sub>β</sub></strong></td><td>1-β 的标准正态分位数</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="card ref-card">
+            <h3 class="card-title">📚 参考文献</h3>
+            <div class="ref-list">
+              <div class="ref-item">
+                <span class="ref-num">[1]</span>
+                <span>Chow SC, Shao J, Wang H, Lokhnygina Y. <em>Sample Size Calculations in Clinical Research</em>, 3rd ed. Chapman & Hall/CRC, 2018. Chapter 4, pp.87-95.</span>
+              </div>
+              <div class="ref-item">
+                <span class="ref-num">[2]</span>
+                <span>Fleiss JL. <em>Statistical Methods for Rates and Proportions</em>, 2nd ed. Wiley, 1981. Chapter 4.</span>
+              </div>
+              <div class="ref-item">
+                <span class="ref-num">[3]</span>
+                <span>Lachin JM. Introduction to sample size determination and power analysis for clinical trials. <em>Control Clin Trials</em>. 1981;2(2):93-113.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card template-card">
+        <h3 class="card-title">📝 论文方法描述模板</h3>
+        <div class="template-actions">
+          <button class="btn-copy" onclick="copyTemplate('rct_p_template')">📋 复制模板</button>
+        </div>
+        <div class="template-box" id="rct_p_template">请先输入参数并完成计算，模板将自动生成...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 横断面调查 ===== -->
+  <section id="cross" class="section">
+    <div class="section-header">
+      <h1 class="section-title">横断面调查样本量计算</h1>
+      <p class="section-desc">Cross-Sectional Survey — 估计总体率/均值</p>
+    </div>
+
+    <div class="sub-tabs">
+      <button class="sub-btn active" id="cross-prop-btn" onclick="switchCross('prop')">估计患病率/比例</button>
+      <button class="sub-btn" id="cross-mean-btn" onclick="switchCross('mean')">估计总体均值</button>
+    </div>
+
+    <!-- 横断面 率 -->
+    <div id="cross-prop" class="calc-panel">
+      <div class="calc-layout">
+        <div class="calc-left">
+          <div class="card input-card">
+            <h3 class="card-title">📥 参数输入</h3>
+            <div class="param-grid">
+              <div class="param-item">
+                <label>显著性水平 α（置信水平 = 1-α）</label>
+                <input type="number" id="cs_p_alpha" value="0.05" step="0.01" min="0.01" max="0.2" onchange="calcCrossProp()" oninput="calcCrossProp()">
+                <span class="param-hint">α=0.05 对应 95% 置信区间</span>
+              </div>
+              <div class="param-item">
+                <label>预期患病率 / 比例 p</label>
+                <input type="number" id="cs_p_p" value="0.50" step="0.01" min="0.01" max="0.99" onchange="calcCrossProp()" oninput="calcCrossProp()">
+                <span class="param-hint">不确定时取 0.5（最保守）</span>
+              </div>
+              <div class="param-item">
+                <label>允许误差（绝对精度）d</label>
+                <input type="number" id="cs_p_d" value="0.05" step="0.01" min="0.001" max="0.3" onchange="calcCrossProp()" oninput="calcCrossProp()">
+                <span class="param-hint">如0.05表示误差在±5%以内</span>
+              </div>
+              <div class="param-item">
+                <label>设计效应 DEFF</label>
+                <input type="number" id="cs_p_deff" value="1.0" step="0.1" min="1.0" max="5.0" onchange="calcCrossProp()" oninput="calcCrossProp()">
+                <span class="param-hint">简单随机抽样取1；整群抽样通常1.5-2.0</span>
+              </div>
+              <div class="param-item">
+                <label>无应答率 / 脱落率 (%)</label>
+                <input type="number" id="cs_p_dropout" value="10" min="0" max="50" onchange="calcCrossProp()" oninput="calcCrossProp()">
+                <span class="param-hint">考虑拒访/失访调整</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card result-card">
+            <h3 class="card-title">📊 计算结果</h3>
+            <div class="result-main">
+              <div class="result-num" id="cs_p_n">—</div>
+              <div class="result-label">所需样本量</div>
+            </div>
+            <div class="result-detail">
+              <div class="result-item"><span>基础样本量</span><strong id="cs_p_n_base">—</strong></div>
+              <div class="result-item"><span>DEFF 调整后</span><strong id="cs_p_n_deff">—</strong></div>
+              <div class="result-item"><span>最终（含无应答）</span><strong id="cs_p_n_final">—</strong></div>
+              <div class="result-item"><span>z<sub>α/2</sub></span><strong id="cs_p_za">—</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="calc-right">
+          <div class="card formula-card">
+            <h3 class="card-title">📐 计算公式</h3>
+            <div class="formula-box">
+              <div class="formula-desc">估计总体率，要求置信区间半宽 ≤ d：</div>
+              <div class="math-display">
+                \[n = \frac{z_{\alpha/2}^2 \cdot p(1-p)}{d^2}\]
+              </div>
+              <div class="formula-desc">考虑设计效应 DEFF（复杂抽样设计）：</div>
+              <div class="math-display">
+                \[n_{deff} = n \times DEFF\]
+              </div>
+              <div class="formula-desc">考虑有限总体校正（总体量 N 已知）：</div>
+              <div class="math-display">
+                \[n_{fpc} = \frac{n}{1 + (n-1)/N}\]
+              </div>
+              <div class="formula-desc">考虑无应答率 r 调整：</div>
+              <div class="math-display">
+                \[n_{adj} = \frac{n_{deff}}{1-r}\]
+              </div>
+            </div>
+            <div class="param-explain">
+              <h4>参数说明</h4>
+              <table class="param-table">
+                <tr><td><strong>p</strong></td><td>预期患病率/比例；不确定时取0.5（方差最大，最保守）</td></tr>
+                <tr><td><strong>d</strong></td><td>绝对精度（允许误差），即置信区间半宽</td></tr>
+                <tr><td><strong>DEFF</strong></td><td>设计效应，反映抽样方法的效率，整群抽样通常1.5-2.0</td></tr>
+                <tr><td><strong>z<sub>α/2</sub></strong></td><td>α=0.05时 z=1.96，α=0.01时 z=2.576</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="card ref-card">
+            <h3 class="card-title">📚 参考文献</h3>
+            <div class="ref-list">
+              <div class="ref-item">
+                <span class="ref-num">[1]</span>
+                <span>Chow SC, Shao J, Wang H, Lokhnygina Y. <em>Sample Size Calculations in Clinical Research</em>, 3rd ed. Chapman & Hall/CRC, 2018. Chapter 12.</span>
+              </div>
+              <div class="ref-item">
+                <span class="ref-num">[2]</span>
+                <span>Cochran WG. <em>Sampling Techniques</em>, 3rd ed. Wiley, 1977. Chapter 4.</span>
+              </div>
+              <div class="ref-item">
+                <span class="ref-num">[3]</span>
+                <span>Lwanga SK, Lemeshow S. <em>Sample Size Determination in Health Studies</em>. WHO, 1991.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card template-card">
+        <h3 class="card-title">📝 论文方法描述模板</h3>
+        <div class="template-actions">
+          <button class="btn-copy" onclick="copyTemplate('cs_p_template')">📋 复制模板</button>
+        </div>
+        <div class="template-box" id="cs_p_template">请先输入参数并完成计算，模板将自动生成...</div>
+      </div>
+    </div>
+
+    <!-- 横断面 均值 -->
+    <div id="cross-mean" class="calc-panel" style="display:none">
+      <div class="calc-layout">
+        <div class="calc-left">
+          <div class="card input-card">
+            <h3 class="card-title">📥 参数输入</h3>
+            <div class="param-grid">
+              <div class="param-item">
+                <label>显著性水平 α</label>
+                <input type="number" id="cs_m_alpha" value="0.05" step="0.01" min="0.01" max="0.2" onchange="calcCrossMean()" oninput="calcCrossMean()">
+                <span class="param-hint">α=0.05 对应 95% 置信区间</span>
+              </div>
+              <div class="param-item">
+                <label>总体标准差 σ</label>
+                <input type="number" id="cs_m_sigma" value="10" min="0.01" onchange="calcCrossMean()" oninput="calcCrossMean()">
+                <span class="param-hint">基于文献或预试验估计</span>
+              </div>
+              <div class="param-item">
+                <label>允许误差（绝对精度）d</label>
+                <input type="number" id="cs_m_d" value="2" min="0.001" onchange="calcCrossMean()" oninput="calcCrossMean()">
+                <span class="param-hint">均值估计的最大允许误差</span>
+              </div>
+              <div class="param-item">
+                <label>设计效应 DEFF</label>
+                <input type="number" id="cs_m_deff" value="1.0" step="0.1" min="1.0" max="5.0" onchange="calcCrossMean()" oninput="calcCrossMean()">
+                <span class="param-hint">简单随机抽样取1</span>
+              </div>
+              <div class="param-item">
+                <label>无应答率 / 脱落率 (%)</label>
+                <input type="number" id="cs_m_dropout" value="10" min="0" max="50" onchange="calcCrossMean()" oninput="calcCrossMean()">
+              </div>
+            </div>
+          </div>
+          <div class="card result-card">
+            <h3 class="card-title">📊 计算结果</h3>
+            <div class="result-main">
+              <div class="result-num" id="cs_m_n">—</div>
+              <div class="result-label">所需样本量</div>
+            </div>
+            <div class="result-detail">
+              <div class="result-item"><span>基础样本量</span><strong id="cs_m_n_base">—</strong></div>
+              <div class="result-item"><span>最终（含脱落）</span><strong id="cs_m_n_final">—</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="calc-right">
+          <div class="card formula-card">
+            <h3 class="card-title">📐 计算公式</h3>
+            <div class="formula-box">
+              <div class="formula-desc">估计总体均值，置信区间半宽 ≤ d：</div>
+              <div class="math-display">
+                \[n = \frac{z_{\alpha/2}^2 \cdot \sigma^2}{d^2} \times DEFF\]
+              </div>
+            </div>
+            <div class="param-explain">
+              <h4>参数说明</h4>
+              <table class="param-table">
+                <tr><td><strong>σ</strong></td><td>总体标准差，通常来自预试验或文献</td></tr>
+                <tr><td><strong>d</strong></td><td>允许的绝对误差（置信区间半宽）</td></tr>
+                <tr><td><strong>DEFF</strong></td><td>设计效应，简单随机抽样取1.0</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="card ref-card">
+            <h3 class="card-title">📚 参考文献</h3>
+            <div class="ref-list">
+              <div class="ref-item">
+                <span class="ref-num">[1]</span>
+                <span>Chow SC, Shao J, Wang H, Lokhnygina Y. <em>Sample Size Calculations in Clinical Research</em>, 3rd ed. Chapman & Hall/CRC, 2018.</span>
+              </div>
+              <div class="ref-item">
+                <span class="ref-num">[2]</span>
+                <span>Cochran WG. <em>Sampling Techniques</em>, 3rd ed. Wiley, 1977.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card template-card">
+        <h3 class="card-title">📝 论文方法描述模板</h3>
+        <div class="template-actions">
+          <button class="btn-copy" onclick="copyTemplate('cs_m_template')">📋 复制模板</button>
+        </div>
+        <div class="template-box" id="cs_m_template">请先输入参数并完成计算，模板将自动生成...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 队列研究 ===== -->
+  <section id="cohort" class="section">
+    <div class="section-header">
+      <h1 class="section-title">队列研究样本量计算</h1>
+      <p class="section-desc">Cohort Study — 比较暴露组与非暴露组的发病率</p>
+    </div>
+
+    <div class="calc-layout">
+      <div class="calc-left">
+        <div class="card input-card">
+          <h3 class="card-title">📥 参数输入</h3>
+          <div class="param-grid">
+            <div class="param-item">
+              <label>显著性水平 α</label>
+              <div class="input-row">
+                <select id="co_tail" onchange="calcCohort()">
+                  <option value="2">双侧检验</option>
+                  <option value="1">单侧检验</option>
+                </select>
+                <input type="number" id="co_alpha" value="0.05" step="0.01" min="0.001" max="0.2" onchange="calcCohort()" oninput="calcCohort()">
+              </div>
+            </div>
+            <div class="param-item">
+              <label>检验效能 1-β</label>
+              <input type="number" id="co_power" value="0.80" step="0.05" min="0.5" max="0.99" onchange="calcCohort()" oninput="calcCohort()">
+            </div>
+            <div class="param-item">
+              <label>非暴露组发病率 p₀</label>
+              <input type="number" id="co_p0" value="0.10" step="0.01" min="0.001" max="0.99" onchange="calcCohort()" oninput="calcCohort()">
+              <span class="param-hint">对照组（非暴露）的结局发生率</span>
+            </div>
+            <div class="param-item">
+              <label>暴露组发病率 p₁（预期）</label>
+              <input type="number" id="co_p1" value="0.20" step="0.01" min="0.001" max="0.99" onchange="calcCohort()" oninput="calcCohort()">
+              <span class="param-hint">对应 RR = p₁/p₀</span>
+            </div>
+            <div class="param-item">
+              <label>暴露组:对照组比例 k</label>
+              <input type="number" id="co_k" value="1" min="0.1" step="0.5" onchange="calcCohort()" oninput="calcCohort()">
+              <span class="param-hint">1 = 等比例；暴露罕见时可取 1:2 或 1:3</span>
+            </div>
+            <div class="param-item">
+              <label>失访率 (%)</label>
+              <input type="number" id="co_dropout" value="10" min="0" max="50" onchange="calcCohort()" oninput="calcCohort()">
+            </div>
+          </div>
+        </div>
+
+        <div class="card result-card">
+          <h3 class="card-title">📊 计算结果</h3>
+          <div class="result-main">
+            <div class="result-num" id="co_n_per">—</div>
+            <div class="result-label">每组样本量</div>
+          </div>
+          <div class="result-detail">
+            <div class="result-item"><span>暴露组</span><strong id="co_n1">—</strong></div>
+            <div class="result-item"><span>非暴露组</span><strong id="co_n0">—</strong></div>
+            <div class="result-item"><span>总样本量</span><strong id="co_n_total">—</strong></div>
+            <div class="result-item"><span>调整后（含失访）</span><strong id="co_n_adj">—</strong></div>
+            <div class="result-item"><span>相对危险度 RR</span><strong id="co_rr">—</strong></div>
+            <div class="result-item"><span>归因危险度 AR</span><strong id="co_ar">—</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-right">
+        <div class="card formula-card">
+          <h3 class="card-title">📐 计算公式</h3>
+          <div class="formula-box">
+            <div class="formula-desc">队列研究中两组率比较（Kelsey公式）：</div>
+            <div class="math-display">
+              \[n_0 = \frac{\left[z_{\alpha/2}\sqrt{(1+1/k)\bar{p}(1-\bar{p})} + z_{\beta}\sqrt{p_0(1-p_0)+p_1(1-p_1)/k}\right]^2}{(p_1-p_0)^2}\]
+            </div>
+            <div class="formula-desc">暴露组样本量：</div>
+            <div class="math-display">
+              \[n_1 = k \cdot n_0\]
+            </div>
+            <div class="formula-desc">其中合并率：</div>
+            <div class="math-display">
+              \[\bar{p} = \frac{p_0 + k p_1}{1+k}\]
+            </div>
+            <div class="formula-desc">相对危险度 RR 与归因危险度 AR：</div>
+            <div class="math-display">
+              \[RR = \frac{p_1}{p_0}, \quad AR = p_1 - p_0\]
+            </div>
+          </div>
+          <div class="param-explain">
+            <h4>参数说明</h4>
+            <table class="param-table">
+              <tr><td><strong>p₀</strong></td><td>非暴露组（对照组）的结局发生率，来自文献报道</td></tr>
+              <tr><td><strong>p₁</strong></td><td>暴露组预期结局发生率，通常 p₁ = RR × p₀</td></tr>
+              <tr><td><strong>RR</strong></td><td>相对危险度，研究者认为有临床意义的最小值</td></tr>
+              <tr><td><strong>k</strong></td><td>暴露组与非暴露组的样本量比值</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="card ref-card">
+          <h3 class="card-title">📚 参考文献</h3>
+          <div class="ref-list">
+            <div class="ref-item">
+              <span class="ref-num">[1]</span>
+              <span>Chow SC, Shao J, Wang H, Lokhnygina Y. <em>Sample Size Calculations in Clinical Research</em>, 3rd ed. Chapman & Hall/CRC, 2018. Chapter 8, pp.189-210.</span>
+            </div>
+            <div class="ref-item">
+              <span class="ref-num">[2]</span>
+              <span>Kelsey JL, Whittemore AS, Evans AS, Thompson WD. <em>Methods in Observational Epidemiology</em>, 2nd ed. Oxford, 1996. Appendix.</span>
+            </div>
+            <div class="ref-item">
+              <span class="ref-num">[3]</span>
+              <span>Schlesselman JJ. <em>Case-Control Studies: Design, Conduct, Analysis</em>. Oxford University Press, 1982.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card template-card">
+      <h3 class="card-title">📝 论文方法描述模板</h3>
+      <div class="template-actions">
+        <button class="btn-copy" onclick="copyTemplate('co_template')">📋 复制模板</button>
+      </div>
+      <div class="template-box" id="co_template">请先输入参数并完成计算，模板将自动生成...</div>
+    </div>
+  </section>
+
+  <!-- ===== 病例对照 ===== -->
+  <section id="casecontrol" class="section">
+    <div class="section-header">
+      <h1 class="section-title">病例对照研究样本量计算</h1>
+      <p class="section-desc">Case-Control Study — 评估暴露因素与疾病的关联</p>
+    </div>
+
+    <div class="calc-layout">
+      <div class="calc-left">
+        <div class="card input-card">
+          <h3 class="card-title">📥 参数输入</h3>
+          <div class="param-grid">
+            <div class="param-item">
+              <label>显著性水平 α</label>
+              <div class="input-row">
+                <select id="cc_tail" onchange="calcCaseControl()">
+                  <option value="2">双侧检验</option>
+                  <option value="1">单侧检验</option>
+                </select>
+                <input type="number" id="cc_alpha" value="0.05" step="0.01" min="0.001" max="0.2" onchange="calcCaseControl()" oninput="calcCaseControl()">
+              </div>
+            </div>
+            <div class="param-item">
+              <label>检验效能 1-β</label>
+              <input type="number" id="cc_power" value="0.80" step="0.05" min="0.5" max="0.99" onchange="calcCaseControl()" oninput="calcCaseControl()">
+            </div>
+            <div class="param-item">
+              <label>对照组暴露率 p₀</label>
+              <input type="number" id="cc_p0" value="0.20" step="0.01" min="0.001" max="0.99" onchange="calcCaseControl()" oninput="calcCaseControl()">
+              <span class="param-hint">对照人群中暴露因素的比例</span>
+            </div>
+            <div class="param-item">
+              <label>预期比值比 OR</label>
+              <input type="number" id="cc_or" value="2.0" step="0.1" min="0.1" onchange="calcCaseControl()" oninput="calcCaseControl()">
+              <span class="param-hint">有临床意义的最小 OR 值</span>
+            </div>
+            <div class="param-item">
+              <label>对照:病例比例 m</label>
+              <input type="number" id="cc_m" value="1" min="1" step="1" onchange="calcCaseControl()" oninput="calcCaseControl()">
+              <span class="param-hint">通常1:1；病例难募集时可取1:2或1:3</span>
+            </div>
+            <div class="param-item">
+              <label>无应答率 (%)</label>
+              <input type="number" id="cc_dropout" value="10" min="0" max="50" onchange="calcCaseControl()" oninput="calcCaseControl()">
+            </div>
+          </div>
+        </div>
+
+        <div class="card result-card">
+          <h3 class="card-title">📊 计算结果</h3>
+          <div class="result-main">
+            <div class="result-num" id="cc_n_case">—</div>
+            <div class="result-label">病例组样本量</div>
+          </div>
+          <div class="result-detail">
+            <div class="result-item"><span>对照组</span><strong id="cc_n_ctrl">—</strong></div>
+            <div class="result-item"><span>总样本量</span><strong id="cc_n_total">—</strong></div>
+            <div class="result-item"><span>调整后（含无应答）</span><strong id="cc_n_adj">—</strong></div>
+            <div class="result-item"><span>病例组暴露率 p₁</span><strong id="cc_p1">—</strong></div>
+            <div class="result-item"><span>合并暴露率 p̄</span><strong id="cc_pbar">—</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-right">
+        <div class="card formula-card">
+          <h3 class="card-title">📐 计算公式</h3>
+          <div class="formula-box">
+            <div class="formula-desc">首先由对照组暴露率 p₀ 和 OR 计算病例组暴露率 p₁：</div>
+            <div class="math-display">
+              \[p_1 = \frac{OR \cdot p_0}{1 - p_0 + OR \cdot p_0}\]
+            </div>
+            <div class="formula-desc">Kelsey 公式（非连续性校正前）病例组样本量：</div>
+            <div class="math-display">
+              \[n_{case} = \frac{\left[z_{\alpha/2}\sqrt{(1+1/m)\bar{p}(1-\bar{p})} + z_{\beta}\sqrt{p_1(1-p_1)+p_0(1-p_0)/m}\right]^2}{(p_1-p_0)^2}\]
+            </div>
+            <div class="formula-desc">合并暴露率：</div>
+            <div class="math-display">
+              \[\bar{p} = \frac{p_1 + m \cdot p_0}{1+m}\]
+            </div>
+            <div class="formula-desc">对照组样本量：</div>
+            <div class="math-display">
+              \[n_{ctrl} = m \cdot n_{case}\]
+            </div>
+          </div>
+          <div class="param-explain">
+            <h4>参数说明</h4>
+            <table class="param-table">
+              <tr><td><strong>p₀</strong></td><td>对照人群中暴露的比例（来自人群研究或流行病学数据）</td></tr>
+              <tr><td><strong>OR</strong></td><td>比值比，研究者认为有临床/公卫意义的最小值</td></tr>
+              <tr><td><strong>p₁</strong></td><td>病例组中暴露的比例（由 p₀ 和 OR 推导）</td></tr>
+              <tr><td><strong>m</strong></td><td>每个病例对应的对照数</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="card ref-card">
+          <h3 class="card-title">📚 参考文献</h3>
+          <div class="ref-list">
+            <div class="ref-item">
+              <span class="ref-num">[1]</span>
+              <span>Chow SC, Shao J, Wang H, Lokhnygina Y. <em>Sample Size Calculations in Clinical Research</em>, 3rd ed. Chapman & Hall/CRC, 2018. Chapter 8, pp.210-225.</span>
+            </div>
+            <div class="ref-item">
+              <span class="ref-num">[2]</span>
+              <span>Schlesselman JJ. <em>Case-Control Studies: Design, Conduct, Analysis</em>. Oxford University Press, 1982. Chapter 6.</span>
+            </div>
+            <div class="ref-item">
+              <span class="ref-num">[3]</span>
+              <span>Kelsey JL, et al. <em>Methods in Observational Epidemiology</em>, 2nd ed. Oxford, 1996.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card template-card">
+      <h3 class="card-title">📝 论文方法描述模板</h3>
+      <div class="template-actions">
+        <button class="btn-copy" onclick="copyTemplate('cc_template')">📋 复制模板</button>
+      </div>
+      <div class="template-box" id="cc_template">请先输入参数并完成计算，模板将自动生成...</div>
+    </div>
+  </section>
+
+  <!-- ===== 预测模型 ===== -->
+  <section id="prediction" class="section">
+    <div class="section-header">
+      <h1 class="section-title">预测模型样本量计算</h1>
+      <p class="section-desc">Prediction Model — 基于EPV、Riley公式及二分类/连续结局</p>
+    </div>
+
+    <div class="sub-tabs">
+      <button class="sub-btn active" id="pred-epv-btn" onclick="switchPred('epv')">EPV法（二分类结局）</button>
+      <button class="sub-btn" id="pred-riley-btn" onclick="switchPred('riley')">Riley公式（推荐）</button>
+      <button class="sub-btn" id="pred-cont-btn" onclick="switchPred('cont')">连续结局预测</button>
+    </div>
+
+    <!-- EPV法 -->
+    <div id="pred-epv" class="calc-panel">
+      <div class="calc-layout">
+        <div class="calc-left">
+          <div class="card input-card">
+            <h3 class="card-title">📥 参数输入</h3>
+            <div class="param-grid">
+              <div class="param-item">
+                <label>预测变量数目 p</label>
+                <input type="number" id="epv_p" value="10" min="1" max="100" step="1" onchange="calcEPV()" oninput="calcEPV()">
+                <span class="param-hint">模型中候选变量的个数</span>
+              </div>
+              <div class="param-item">
+                <label>每变量事件数 EPV</label>
+                <input type="number" id="epv_epv" value="10" min="5" max="50" step="1" onchange="calcEPV()" oninput="calcEPV()">
+                <span class="param-hint">传统建议≥10，Riley等(2019)建议≥20</span>
+              </div>
+              <div class="param-item">
+                <label>结局事件发生率 / 患病率</label>
+                <input type="number" id="epv_rate" value="0.30" step="0.01" min="0.01" max="0.99" onchange="calcEPV()" oninput="calcEPV()">
+                <span class="param-hint">结局事件在样本中的比例</span>
+              </div>
+              <div class="param-item">
+                <label>脱落/缺失率 (%)</label>
+                <input type="number" id="epv_dropout" value="10" min="0" max="50" onchange="calcEPV()" oninput="calcEPV()">
+              </div>
+            </div>
+          </div>
+
+          <div class="card result-card">
+            <h3 class="card-title">📊 计算结果</h3>
+            <div class="result-main">
+              <div class="result-num" id="epv_n">—</div>
+              <div class="result-label">所需样本量</div>
+            </div>
+            <div class="result-detail">
+              <div class="result-item"><span>最小事件数 E</span><strong id="epv_events">—</strong></div>
+              <div class="result-item"><span>基础样本量</span><strong id="epv_n_base">—</strong></div>
+              <div class="result-item"><span>调整后（含脱落）</span><strong id="epv_n_final">—</strong></div>
+              <div class="result-item"><span>EPV 标准</span><strong id="epv_standard">—</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="calc-right">
+          <div class="card formula-card">
+            <h3 class="card-title">📐 计算公式</h3>
+            <div class="formula-box">
+              <div class="formula-desc">EPV（Events Per Variable）传统法：</div>
+              <div class="math-display">
+                \[E_{min} = EPV \times p\]
+              </div>
+              <div class="formula-desc">所需总样本量（基于事件率）：</div>
+              <div class="math-display">
+                \[N = \frac{E_{min}}{\pi}\]
+              </div>
+              <div class="formula-desc">其中 π 为结局事件率，Peduzzi et al. (1996) 建议 EPV ≥ 10；Riley et al. (2019) 建议 EPV ≥ 20。</div>
+              <div class="formula-desc">考虑脱落率 d：</div>
+              <div class="math-display">
+                \[N_{adj} = \frac{N}{1-d}\]
+              </div>
+            </div>
+            <div class="param-explain">
+              <h4>参数说明</h4>
+              <table class="param-table">
+                <tr><td><strong>p</strong></td><td>模型中候选预测变量数（含哑变量展开后的参数数）</td></tr>
+                <tr><td><strong>EPV</strong></td><td>每个预测变量对应的事件数，≥10（传统），≥20（推荐）</td></tr>
+                <tr><td><strong>π</strong></td><td>结局事件率（二分类结局中阳性事件的比例）</td></tr>
+                <tr><td><strong>E</sub></strong></td><td>最少需要观察到的结局事件数 = EPV × p</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="card ref-card">
+            <h3 class="card-title">📚 参考文献</h3>
+            <div class="ref-list">
+              <div class="ref-item">
+                <span class="ref-num">[1]</span>
+                <span>Peduzzi P, Concato J, Kemper E, et al. A simulation study of the number of events per variable in logistic regression analysis. <em>J Clin Epidemiol</em>. 1996;49(12):1373-1379.</span>
+              </div>
+              <div class="ref-item">
+                <span class="ref-num">[2]</span>
+                <span>Riley RD, Ensor J, Snell KIE, et al. Calculating the sample size required for developing a clinical prediction model. <em>BMJ</em>. 2020;368:m441.</span>
+              </div>
+              <div class="ref-item">
+                <span class="ref-num">[3]</span>
+                <span>Vittinghoff E, McCulloch CE. Relaxing the rule of ten events per variable in logistic and Cox regression. <em>Am J Epidemiol</em>. 2007;165(6):710-718.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card template-card">
+        <h3 class="card-title">📝 论文方法描述模板</h3>
+        <div class="template-actions">
+          <button class="btn-copy" onclick="copyTemplate('epv_template')">📋 复制模板</button>
+        </div>
+        <div class="template-box" id="epv_template">请先输入参数并完成计算，模板将自动生成...</div>
+      </div>
+    </div>
+
+    <!-- Riley公式 -->
+    <div id="pred-riley" class="calc-panel" style="display:none">
+      <div class="calc-layout">
+        <div class="calc-left">
+          <div class="card input-card">
+            <h3 class="card-title">📥 参数输入</h3>
+            <div class="param-grid">
+              <div class="param-item">
+                <label>预测变量数目 p</label>
+                <input type="number" id="riley_p" value="10" min="1" max="100" step="1" onchange="calcRiley()" oninput="calcRiley()">
+              </div>
+              <div class="param-item">
+                <label>结局事件率 π</label>
+                <input type="number" id="riley_rate" value="0.30" step="0.01" min="0.01" max="0.99" onchange="calcRiley()" oninput="calcRiley()">
+                <span class="param-hint">结局事件在总人群中的比例</span>
+              </div>
+              <div class="param-item">
+                <label>预期模型 Nagelkerke R²</label>
+                <input type="number" id="riley_r2" value="0.15" step="0.01" min="0.01" max="0.99" onchange="calcRiley()" oninput="calcRiley()">
+                <span class="param-hint">模型预期解释变异量；文献来源或取0.1-0.2</span>
+              </div>
+              <div class="param-item">
+                <label>最大收缩因子 S（精度要求）</label>
+                <input type="number" id="riley_s" value="0.90" step="0.01" min="0.5" max="0.99" onchange="calcRiley()" oninput="calcRiley()">
+                <span class="param-hint">Riley建议 S≥0.9，反映过拟合风险</span>
+              </div>
+              <div class="param-item">
+                <label>脱落率 (%)</label>
+                <input type="number" id="riley_dropout" value="10" min="0" max="50" onchange="calcRiley()" oninput="calcRiley()">
+              </div>
+            </div>
+          </div>
+
+          <div class="card result-card">
+            <h3 class="card-title">📊 计算结果</h3>
+            <div class="result-main">
+              <div class="result-num" id="riley_n">—</div>
+              <div class="result-label">所需样本量</div>
+            </div>
+            <div class="result-detail">
+              <div class="result-item"><span>标准1（收缩因子）</span><strong id="riley_n1">—</strong></div>
+              <div class="result-item"><span>标准2（Harrell准则）</span><strong id="riley_n2">—</strong></div>
+              <div class="result-item"><span>最终建议（取最大值）</span><strong id="riley_n_final">—</strong></div>
+              <div class="result-item"><span>最小事件数 E</span><strong id="riley_events">—</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="calc-right">
+          <div class="card formula-card">
+            <h3 class="card-title">📐 计算公式</h3>
+            <div class="formula-box">
+              <div class="formula-desc">Riley et al. (2019/2020) 基于收缩因子的准则一（控制过拟合）：</div>
+              <div class="math-display">
+                \[N_1 \geq \frac{p}{\left(S-1\right)\ln\left(1-\frac{R^2_{CS}}{S}\right)}\]
+              </div>
+              <div class="formula-desc">准则二（Harrell，稳定 EPV ≥ 20）：</div>
+              <div class="math-display">
+                \[N_2 \geq \frac{20p}{\pi}\]
+              </div>
+              <div class="formula-desc">Cox-Snell R² 由 Nagelkerke R² 转换：</div>
+              <div class="math-display">
+                \[R^2_{CS} = R^2_{Nagel} \times \left(1 - \exp\left(\frac{-2L_0}{N}\right)\right)^{-1}\]
+              </div>
+              <div class="formula-desc">取 N = max(N₁, N₂) 作为最终推荐样本量，并满足最少事件数：E = N × π ≥ 20p。</div>
+            </div>
+            <div class="param-explain">
+              <h4>参数说明</h4>
+              <table class="param-table">
+                <tr><td><strong>S</strong></td><td>收缩因子（Shrinkage Factor），建议 ≥0.9（过拟合控制），越高要求越大</td></tr>
+                <tr><td><strong>R²<sub>Nagel</sub></strong></td><td>Nagelkerke R²，衡量模型预测能力，可从类似研究文献获取</td></tr>
+                <tr><td><strong>π</strong></td><td>结局事件发生率</td></tr>
+                <tr><td><strong>p</strong></td><td>候选预测变量数（含哑变量）</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="card ref-card">
+            <h3 class="card-title">📚 参考文献</h3>
+            <div class="ref-list">
+              <div class="ref-item">
+                <span class="ref-num">[1]</span>
+                <span>Riley RD, Snell KIE, Ensor J, et al. Minimum sample size for developing a multivariable prediction model: Part I – Continuous outcomes. <em>Stat Med</em>. 2019;38(7):1262-1275.</span>
+              </div>
+              <div class="ref-item">
+                <span class="ref-num">[2]</span>
+                <span>Riley RD, Ensor J, Snell KIE, et al. Calculating the sample size required for developing a clinical prediction model. <em>BMJ</em>. 2020;368:m441.</span>
+              </div>
+              <div class="ref-item">
+                <span class="ref-num">[3]</span>
+                <span>Van Smeden M, de Groot JAH, Moons KGM, et al. No rationale for 1 variable per 10 events criterion for binary logistic regression analysis. <em>BMC Med Res Methodol</em>. 2016;16:163.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card template-card">
+        <h3 class="card-title">📝 论文方法描述模板</h3>
+        <div class="template-actions">
+          <button class="btn-copy" onclick="copyTemplate('riley_template')">📋 复制模板</button>
+        </div>
+        <div class="template-box" id="riley_template">请先输入参数并完成计算，模板将自动生成...</div>
+      </div>
+    </div>
+
+    <!-- 连续结局 -->
+    <div id="pred-cont" class="calc-panel" style="display:none">
+      <div class="calc-layout">
+        <div class="calc-left">
+          <div class="card input-card">
+            <h3 class="card-title">📥 参数输入</h3>
+            <div class="param-grid">
+              <div class="param-item">
+                <label>预测变量数目 p</label>
+                <input type="number" id="cont_p" value="10" min="1" max="100" step="1" onchange="calcContPred()" oninput="calcContPred()">
+              </div>
+              <div class="param-item">
+                <label>预期模型 R²（线性回归）</label>
+                <input type="number" id="cont_r2" value="0.15" step="0.01" min="0.01" max="0.99" onchange="calcContPred()" oninput="calcContPred()">
+                <span class="param-hint">预期调整R²</span>
+              </div>
+              <div class="param-item">
+                <label>最大收缩因子 S</label>
+                <input type="number" id="cont_s" value="0.90" step="0.01" min="0.5" max="0.99" onchange="calcContPred()" oninput="calcContPred()">
+                <span class="param-hint">Riley建议 ≥0.9</span>
+              </div>
+              <div class="param-item">
+                <label>显著性水平 α</label>
+                <input type="number" id="cont_alpha" value="0.05" step="0.01" min="0.001" max="0.2" onchange="calcContPred()" oninput="calcContPred()">
+              </div>
+              <div class="param-item">
+                <label>脱落率 (%)</label>
+                <input type="number" id="cont_dropout" value="10" min="0" max="50" onchange="calcContPred()" oninput="calcContPred()">
+              </div>
+            </div>
+          </div>
+          <div class="card result-card">
+            <h3 class="card-title">📊 计算结果</h3>
+            <div class="result-main">
+              <div class="result-num" id="cont_n">—</div>
+              <div class="result-label">所需样本量</div>
+            </div>
+            <div class="result-detail">
+              <div class="result-item"><span>收缩因子准则</span><strong id="cont_n1">—</strong></div>
+              <div class="result-item"><span>调整后（含脱落）</span><strong id="cont_n_final">—</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="calc-right">
+          <div class="card formula-card">
+            <h3 class="card-title">📐 计算公式</h3>
+            <div class="formula-box">
+              <div class="formula-desc">连续结局线性预测模型（Riley et al., 2019）：</div>
+              <div class="math-display">
+                \[N \geq \frac{p+1}{f\left(1-S\right)\left(1-R^2\right)+R^2(1-S)}\]
+              </div>
+              <div class="formula-desc">其中 f 为 F 统计量的非中心参数，与 α、p 有关。简化版（基于收缩因子）：</div>
+              <div class="math-display">
+                \[N \geq \frac{p}{S \cdot R^2} + p + 1\]
+              </div>
+            </div>
+            <div class="param-explain">
+              <h4>参数说明</h4>
+              <table class="param-table">
+                <tr><td><strong>R²</strong></td><td>模型预期解释方差（调整R²），来自文献或预试验</td></tr>
+                <tr><td><strong>S</strong></td><td>收缩因子，控制过拟合，建议 ≥0.9</td></tr>
+                <tr><td><strong>p</strong></td><td>候选预测变量数</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="card ref-card">
+            <h3 class="card-title">📚 参考文献</h3>
+            <div class="ref-list">
+              <div class="ref-item">
+                <span class="ref-num">[1]</span>
+                <span>Riley RD, Snell KIE, Ensor J, et al. Minimum sample size for developing a multivariable prediction model: Part I – Continuous outcomes. <em>Stat Med</em>. 2019;38(7):1262-1275.</span>
+              </div>
+              <div class="ref-item">
+                <span class="ref-num">[2]</span>
+                <span>Harrell FE. <em>Regression Modeling Strategies</em>, 2nd ed. Springer, 2015. Chapter 4.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card template-card">
+        <h3 class="card-title">📝 论文方法描述模板</h3>
+        <div class="template-actions">
+          <button class="btn-copy" onclick="copyTemplate('cont_template')">📋 复制模板</button>
+        </div>
+        <div class="template-box" id="cont_template">请先输入参数并完成计算，模板将自动生成...</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- 底部 -->
+<footer class="footer">
+  <div>基于 Chow SC et al. <em>Sample Size Calculations in Clinical Research</em> (3rd ed., 2018) 及权威流行病学文献 | 仅供科研参考，临床决策请咨询生统专家</div>
+</footer>
+
+<script src="calc.js"></script>
+</body>
+</html>
