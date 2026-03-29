@@ -8,8 +8,8 @@
         "profession": "UI设计师",
         "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/01-Design/UiDesigner/UiDesigner.png",
         "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/01-Design/UiDesigner/UiDesigner_zh.md",
-        "usedAt": 1774775025450,
-        "industryId": "all"
+        "usedAt": 1774775698211,
+        "industryId": "01-Design"
       },
       {
         "expertId": "SeniorDeveloper",
@@ -22,5 +22,5 @@
       }
     ]
   },
-  "lastUpdated": 1774775369732
+  "lastUpdated": 1774775702573
 }
