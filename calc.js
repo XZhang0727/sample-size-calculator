@@ -240,6 +240,9 @@ $$n_1 = \\frac{${fmtDec(Math.pow(za+zb,2)*sigma*sigma,4)}}{${delta*delta}} \\tim
 - 调整后总样本量 = ${Math.ceil(nTotal)} / (1 - ${dropoutPct}%) = ${fmtDec(nAdj,2)} → ${nAdjC} 例`;
 
   document.getElementById('rct_m_process').textContent = calcProcess;
+  if (window.MathJax) {
+    MathJax.typesetPromise && MathJax.typesetPromise();
+  }
 }
 
 /* ========================================
@@ -341,6 +344,9 @@ $$n_{cc} = \\frac{n}{4}\\left[1+\\sqrt{1+\\frac{2(1+1/k)}{n|p_1-p_2|}}\\right]^2
 - 调整后总样本量 = ${Math.ceil(nTotal)} / (1 - ${dropoutPct}%) = ${fmtDec(nAdj,2)} → ${nAdjC} 例`;
 
   document.getElementById('rct_p_process').textContent = calcProcess;
+  if (window.MathJax) {
+    MathJax.typesetPromise && MathJax.typesetPromise();
+  }
 }
 
 /* ========================================
@@ -414,6 +420,9 @@ $$n_{deff} = n_{base} \\times DEFF = ${fmtDec(nBase,2)} \\times ${deff} = ${fmtD
 $$n_{final} = \\frac{n_{deff}}{1 - r} = \\frac{${fmtDec(nDeff,2)}}{1 - ${dropoutPct}\\%} = ${fmtDec(nFinal, 2)} \\rightarrow ${nFinalC} 例`;
 
   document.getElementById('cs_p_process').textContent = calcProcess;
+  if (window.MathJax) {
+    MathJax.typesetPromise && MathJax.typesetPromise();
+  }
 }
 
 /* ========================================
@@ -485,6 +494,9 @@ $$n_{final} = \\frac{n_{base}}{1 - r} = \\frac{${fmtDec(nBase,2)}}{1 - ${dropout
 - n = (${fmtDec(za,4)} × 114 / 14)² = ${fmtDec(nBase, 2)} → ${nFinalC} 例 ✓`;
 
   document.getElementById('cs_m_process').textContent = calcProcess;
+  if (window.MathJax) {
+    MathJax.typesetPromise && MathJax.typesetPromise();
+  }
 }
 
 /* ========================================
@@ -587,6 +599,9 @@ $$n_0 = \\frac{(term1 + term2)^2}{(p_1-p_0)^2} = \\frac{(${fmtDec(term1,4)}+${fm
 - 调整后总样本量 = ${Math.ceil(nTotal)} / (1 - ${dropoutPct}%) = ${fmtDec(nAdj,2)} → ${nAdjC} 例`;
 
   document.getElementById('co_process').textContent = calcProcess;
+  if (window.MathJax) {
+    MathJax.typesetPromise && MathJax.typesetPromise();
+  }
 }
 
 /* ========================================
@@ -689,6 +704,9 @@ $$n_{case} = \\frac{(term1 + term2)^2}{(p_1-p_0)^2} = ${fmtDec(nCase, 2)}$$
 - 调整后总样本量 = ${Math.ceil(nTotal)} / (1 - ${dropoutPct}%) = ${fmtDec(nAdj,2)} → ${nAdjC} 例`;
 
   document.getElementById('cc_process').textContent = calcProcess;
+  if (window.MathJax) {
+    MathJax.typesetPromise && MathJax.typesetPromise();
+  }
 }
 
 /* ========================================
@@ -763,6 +781,9 @@ $$N_{final} = \\frac{N_{base}}{1 - r} = \\frac{${nBaseC}}{1 - ${dropoutPct}\\%} 
 - Riley et al. (2019) 建议 EPV ≥ 20 以获得更稳定的模型`;
 
   document.getElementById('epv_process').textContent = calcProcess;
+  if (window.MathJax) {
+    MathJax.typesetPromise && MathJax.typesetPromise();
+  }
 }
 
 /* ========================================
@@ -877,6 +898,9 @@ $$N_2 \\geq \\frac{20p}{\\pi} = \\frac{20 \\times ${p}}{${rate}} = ${n2c} 例
 - 调整后样本量 = ${nFinalC} / (1 - ${dropoutPct}%) = ${fmtDec(nAdj, 2)} → ${nAdjC} 例`;
 
   document.getElementById('riley_process').textContent = calcProcess;
+  if (window.MathJax) {
+    MathJax.typesetPromise && MathJax.typesetPromise();
+  }
 }
 
 /* ========================================
@@ -953,6 +977,9 @@ $$N_{final} = \\frac{N}{1 - r} = \\frac{${n1c}}{1 - ${dropoutPct}\\%} = ${fmtDec
 - S 越接近 1，对样本量要求越高`;
 
   document.getElementById('cont_process').textContent = calcProcess;
+  if (window.MathJax) {
+    MathJax.typesetPromise && MathJax.typesetPromise();
+  }
 }
 
 /* ===== 初始化 ===== */
