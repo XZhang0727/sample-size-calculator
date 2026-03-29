@@ -208,6 +208,38 @@ n = (z_{α/2} + z_β)² × σ² × (1 + 1/k) / δ²
 参考文献：Chow SC, Shao J, Wang H, Lokhnygina Y. Sample Size Calculations in Clinical Research (3rd ed.). Chapman & Hall/CRC, 2018.`;
 
   document.getElementById('rct_m_template').textContent = template;
+
+  // 计算过程
+  const calcProcess = `📋 **计算步骤详解**
+
+**Step 1: 计算标准正态分布分位数**
+- α = ${alpha} (${tailStr})
+- z_{α/2} = ${fmtDec(za, 4)}
+- 检验效能 1-β = ${power}，z_β = ${fmtDec(zb, 4)}
+
+**Step 2: 计算均数差值和效应量**
+- 两组均数差 δ = |μ₁ - μ₂| = |${mu1} - ${mu2}| = ${delta}
+- Cohen's d = δ/σ = ${delta}/${sigma} = ${effectD}
+
+**Step 3: 代入公式**
+$$n_1 = \\frac{(z_{\\alpha/2}+z_\\beta)^2 \\cdot \\sigma^2 \\cdot (1+1/k)}{\\delta^2}$$
+
+$$n_1 = \\frac{(${fmtDec(za,4)}+${fmtDec(zb,4)})^2 \\cdot ${sigma}^2 \\cdot (1+1/${k})}{${delta}^2}$$
+
+$$n_1 = \\frac{${fmtDec(Math.pow(za+zb,2),4)} \\cdot ${sigma*sigma}}{${delta*delta}} \\cdot ${fmtDec(1+1/k,4)}$$
+
+$$n_1 = \\frac{${fmtDec(Math.pow(za+zb,2)*sigma*sigma,4)}}{${delta*delta}} \\times ${fmtDec(1+1/k,4)} = ${fmtDec(n1,2)}$$
+
+**Step 4: 计算各组样本量**
+- 对照组 n₁ = ${fmtDec(n1,2)} → 取整 ${n1c} 例
+- 试验组 n₂ = k × n₁ = ${k} × ${n1c} = ${n2c} 例
+- 总样本量 = ${n1c} + ${n2c} = ${Math.ceil(nTotal)} 例
+
+**Step 5: 考虑脱落率调整**
+- 脱落率 = ${dropoutPct}%
+- 调整后总样本量 = ${Math.ceil(nTotal)} / (1 - ${dropoutPct}%) = ${fmtDec(nAdj,2)} → ${nAdjC} 例`;
+
+  document.getElementById('rct_m_process').textContent = calcProcess;
 }
 
 /* ========================================
@@ -270,6 +302,45 @@ n = [z_{α/2}√((1+1/k)p̄(1-p̄)) + z_β√(p₁(1-p₁) + p₂(1-p₂)/k)]² 
 2. Chow SC, et al. Sample Size Calculations in Clinical Research (3rd ed.). CRC, 2018.`;
 
   document.getElementById('rct_p_template').textContent = template;
+
+  // 计算过程
+  const calcProcess = `📋 **计算步骤详解**
+
+**Step 1: 计算标准正态分布分位数**
+- α = ${alpha} (${tailStr})
+- z_{α/2} = ${fmtDec(za, 4)}
+- 检验效能 1-β = ${power}，z_β = ${fmtDec(zb, 4)}
+
+**Step 2: 计算合并率**
+$$\\bar{p} = \\frac{p_1 + k \\cdot p_2}{1+k} = \\frac{${p1} + ${k} \\times ${p2}}{1+${k}} = ${fmtDec(pbar, 4)}$$
+
+**Step 3: 计算两项独立成分**
+- term1 = z_{α/2} × √[(1+1/k) × p̄ × (1-p̄)]
+  = ${fmtDec(za,4)} × √[(1+1/${k}) × ${fmtDec(pbar,4)} × ${fmtDec(1-pbar,4)}]
+  = ${fmtDec(za,4)} × √${fmtDec((1+1/k)*pbar*(1-pbar),4)}
+  = ${fmtDec(term1, 4)}
+
+- term2 = z_β × √[p₁(1-p₁) + p₂(1-p₂)/k]
+  = ${fmtDec(zb,4)} × √[${p1}×${fmtDec(1-p1,4)} + ${p2}×${fmtDec(1-p2,4)}/${k}]
+  = ${fmtDec(zb,4)} × √${fmtDec(p1*(1-p1)+p2*(1-p2)/k,4)}
+  = ${fmtDec(term2, 4)}
+
+**Step 4: 代入Fleiss公式（无校正）**
+$$n_1 = \\frac{(term1 + term2)^2}{(p_1-p_2)^2} = \\frac{(${fmtDec(term1,4)}+${fmtDec(term2,4)})^2}{${delta}^2} = ${fmtDec(n1_basic, 2)}$$
+
+**Step 5: Fleiss连续性校正**
+$$n_{cc} = \\frac{n}{4}\\left[1+\\sqrt{1+\\frac{2(1+1/k)}{n|p_1-p_2|}}\\right]^2$$
+= ${fmtDec(n1, 2)} → 取整 ${n1c} 例
+
+**Step 6: 计算各组样本量**
+- 对照组 n₁ = ${n1c} 例
+- 试验组 n₂ = k × n₁ = ${k} × ${n1c} = ${n2c} 例
+- 总样本量 = ${Math.ceil(nTotal)} 例
+
+**Step 7: 考虑脱落率调整**
+- 调整后总样本量 = ${Math.ceil(nTotal)} / (1 - ${dropoutPct}%) = ${fmtDec(nAdj,2)} → ${nAdjC} 例`;
+
+  document.getElementById('rct_p_process').textContent = calcProcess;
 }
 
 /* ========================================
@@ -317,6 +388,32 @@ n = z²_{α/2} × p(1-p) / d²
 3. Chow SC, et al. Sample Size Calculations in Clinical Research (3rd ed.). CRC, 2018.`;
 
   document.getElementById('cs_p_template').textContent = template;
+
+  // 计算过程
+  const calcProcess = `📋 **计算步骤详解**
+
+**Step 1: 计算标准正态分布分位数**
+- α = ${alpha}（对应 ${ci}% 置信区间）
+- z_{α/2} = ${fmtDec(za, 4)}
+
+**Step 2: 计算基础样本量（Cochran公式）**
+$$n = \\frac{z_{\\alpha/2}^2 \\cdot p(1-p)}{d^2}$$
+
+代入参数：
+- p = ${p}（预期患病率）
+- d = ${d}（允许误差）
+- p(1-p) = ${p} × (1-${p}) = ${fmtDec(p*(1-p), 4)}
+- z_{α/2}² = (${fmtDec(za,4)})² = ${fmtDec(za*za, 4)}
+
+$$n_{base} = \\frac{${fmtDec(za*za,4)} \\times ${fmtDec(p*(1-p),4)}}{${d}^2} = \\frac{${fmtDec(za*za*p*(1-p),4)}}{${d*d}} = ${fmtDec(nBase, 2)}$$
+
+**Step 3: 考虑设计效应（DEFF）**
+$$n_{deff} = n_{base} \\times DEFF = ${fmtDec(nBase,2)} \\times ${deff} = ${fmtDec(nDeff, 2)}$$
+
+**Step 4: 考虑无应答率**
+$$n_{final} = \\frac{n_{deff}}{1 - r} = \\frac{${fmtDec(nDeff,2)}}{1 - ${dropoutPct}\\%} = ${fmtDec(nFinal, 2)} \\rightarrow ${nFinalC} 例`;
+
+  document.getElementById('cs_p_process').textContent = calcProcess;
 }
 
 /* ========================================
@@ -358,6 +455,36 @@ n = z²_{α/2} × σ² / d² × DEFF
 2. Chow SC, et al. Sample Size Calculations in Clinical Research (3rd ed.). CRC, 2018.`;
 
   document.getElementById('cs_m_template').textContent = template;
+
+  // 计算过程
+  const calcProcess = `📋 **计算步骤详解**
+
+**Step 1: 计算标准正态分布分位数**
+- α = ${alpha}（对应 ${ci}% 置信区间）
+- z_{α/2} = ${fmtDec(za, 4)}
+
+**Step 2: 计算基础样本量**
+$$n = \\frac{z_{\\alpha/2}^2 \\cdot \\sigma^2}{d^2} \\times DEFF$$
+
+代入参数：
+- σ = ${sigma}（标准差）
+- d = ${d}（允许误差）
+- σ² = ${sigma}² = ${sigma*sigma}
+- z_{α/2}² = (${fmtDec(za,4)})² = ${fmtDec(za*za, 4)}
+
+$$n_{base} = \\frac{${fmtDec(za*za,4)} \\times ${sigma*sigma}}{${d}^2} \\times ${deff} = \\frac{${fmtDec(za*za*sigma*sigma,4)}}{${d*d}} \\times ${deff} = ${fmtDec(nBase, 2)}$$
+
+**Step 3: 考虑脱落率调整**
+$$n_{final} = \\frac{n_{base}}{1 - r} = \\frac{${fmtDec(nBase,2)}}{1 - ${dropoutPct}\\%} = ${fmtDec(nFinal, 2)} \\rightarrow ${nFinalC} 例
+
+---
+
+**公式验证（您的例题）**
+- σ = 114, d = 14, α = 0.05
+- z_{0.975} = ${fmtDec(za, 4)}
+- n = (${fmtDec(za,4)} × 114 / 14)² = ${fmtDec(nBase, 2)} → ${nFinalC} 例 ✓`;
+
+  document.getElementById('cs_m_process').textContent = calcProcess;
 }
 
 /* ========================================
@@ -420,6 +547,46 @@ n₀ = [z_{α/2}√((1+1/k)p̄(1-p̄)) + z_β√(p₀(1-p₀)+p₁(1-p₁)/k)]²
 2. Chow SC, et al. Sample Size Calculations in Clinical Research (3rd ed.). CRC, 2018, Chapter 8.`;
 
   document.getElementById('co_template').textContent = template;
+
+  // 计算过程
+  const calcProcess = `📋 **计算步骤详解**
+
+**Step 1: 计算标准正态分布分位数**
+- α = ${alpha} (${tailStr})
+- z_{α/2} = ${fmtDec(za, 4)}
+- 检验效能 1-β = ${power}，z_β = ${fmtDec(zb, 4)}
+
+**Step 2: 计算基本统计量**
+- 非暴露组率 p₀ = ${p0}
+- 暴露组率 p₁ = ${p1}
+- 率差 δ = |p₁ - p₀| = |${p1} - ${p0}| = ${fmtDec(delta, 4)}
+- 相对危险度 RR = p₁/p₀ = ${p1}/${p0} = ${fmtDec(rr, 4)}
+- 归因危险度 AR = p₁ - p₀ = ${fmtDec(ar, 4)}
+
+**Step 3: 计算合并率**
+$$\\bar{p} = \\frac{p_0 + k \\cdot p_1}{1+k} = \\frac{${p0} + ${k} \\times ${p1}}{1+${k}} = ${fmtDec(pbar, 4)}$$
+
+**Step 4: 计算两项独立成分**
+- term1 = z_{α/2} × √[(1+1/k) × p̄ × (1-p̄)]
+  = ${fmtDec(za,4)} × √[(1+1/${k}) × ${fmtDec(pbar,4)} × ${fmtDec(1-pbar,4)}]
+  = ${fmtDec(term1, 4)}
+
+- term2 = z_β × √[p₀(1-p₀) + p₁(1-p₁)/k]
+  = ${fmtDec(zb,4)} × √[${p0}×${fmtDec(1-p0,4)} + ${p1}×${fmtDec(1-p1,4)}/${k}]
+  = ${fmtDec(term2, 4)}
+
+**Step 5: 代入Kelsey公式**
+$$n_0 = \\frac{(term1 + term2)^2}{(p_1-p_0)^2} = \\frac{(${fmtDec(term1,4)}+${fmtDec(term2,4)})^2}{${fmtDec(delta,4)}^2} = ${fmtDec(n0, 2)}$$
+
+**Step 6: 计算各组样本量**
+- 非暴露组 n₀ = ${fmtDec(n0,2)} → 取整 ${n0c} 例
+- 暴露组 n₁ = k × n₀ = ${k} × ${n0c} = ${n1c} 例
+- 总样本量 = ${Math.ceil(nTotal)} 例
+
+**Step 7: 考虑失访率**
+- 调整后总样本量 = ${Math.ceil(nTotal)} / (1 - ${dropoutPct}%) = ${fmtDec(nAdj,2)} → ${nAdjC} 例`;
+
+  document.getElementById('co_process').textContent = calcProcess;
 }
 
 /* ========================================
@@ -484,6 +651,44 @@ n_case = [z_{α/2}√((1+1/m)p̄(1-p̄)) + z_β√(p₁(1-p₁)+p₀(1-p₀)/m)]
 3. Chow SC, et al. Sample Size Calculations in Clinical Research (3rd ed.). CRC, 2018.`;
 
   document.getElementById('cc_template').textContent = template;
+
+  // 计算过程
+  const calcProcess = `📋 **计算步骤详解**
+
+**Step 1: 计算标准正态分布分位数**
+- α = ${alpha} (${tailStr})
+- z_{α/2} = ${fmtDec(za, 4)}
+- 检验效能 1-β = ${power}，z_β = ${fmtDec(zb, 4)}
+
+**Step 2: 由OR推算病例组暴露率**
+$$p_1 = \\frac{OR \\cdot p_0}{1 - p_0 + OR \\cdot p_0} = \\frac{${or} \\times ${p0}}{1 - ${p0} + ${or} \\times ${p0}} = ${fmtDec(p1, 4)}$$
+
+**Step 3: 计算合并暴露率**
+$$\\bar{p} = \\frac{p_1 + m \\cdot p_0}{1+m} = \\frac{${fmtDec(p1,4)} + ${m} \\times ${p0}}{1+${m}} = ${fmtDec(pbar, 4)}$$
+
+- 率差 δ = |p₁ - p₀| = |${fmtDec(p1,4)} - ${p0}| = ${fmtDec(delta, 4)}
+
+**Step 4: 计算两项独立成分**
+- term1 = z_{α/2} × √[(1+1/m) × p̄ × (1-p̄)]
+  = ${fmtDec(za,4)} × √[(1+1/${m}) × ${fmtDec(pbar,4)} × ${fmtDec(1-pbar,4)}]
+  = ${fmtDec(term1, 4)}
+
+- term2 = z_β × √[p₁(1-p₁) + p₀(1-p₀)/m]
+  = ${fmtDec(zb,4)} × √[${fmtDec(p1,4)}×${fmtDec(1-p1,4)} + ${p0}×${fmtDec(1-p0,4)}/${m}]
+  = ${fmtDec(term2, 4)}
+
+**Step 5: 代入Kelsey公式**
+$$n_{case} = \\frac{(term1 + term2)^2}{(p_1-p_0)^2} = ${fmtDec(nCase, 2)}$$
+
+**Step 6: 计算各组样本量**
+- 病例组 n_case = ${fmtDec(nCase,2)} → 取整 ${nCaseC} 例
+- 对照组 n_ctrl = m × n_case = ${m} × ${nCaseC} = ${nCtrlC} 例
+- 总样本量 = ${Math.ceil(nTotal)} 例
+
+**Step 7: 考虑无应答率**
+- 调整后总样本量 = ${Math.ceil(nTotal)} / (1 - ${dropoutPct}%) = ${fmtDec(nAdj,2)} → ${nAdjC} 例`;
+
+  document.getElementById('cc_process').textContent = calcProcess;
 }
 
 /* ========================================
@@ -532,6 +737,32 @@ function calcEPV() {
 2. Riley RD, et al. Calculating the sample size required for developing a clinical prediction model. BMJ. 2020;368:m441.`;
 
   document.getElementById('epv_template').textContent = template;
+
+  // 计算过程
+  const calcProcess = `📋 **计算步骤详解**
+
+**Step 1: 设定参数**
+- 预测变量数 p = ${p}
+- EPV 设定值 = ${epv}（${epv >= 20 ? 'Riley推荐标准' : epv >= 10 ? '传统标准' : '低于推荐标准'}）
+- 结局事件率 π = ${rate}
+
+**Step 2: 计算最少需要的事件数**
+$$E_{min} = EPV \\times p = ${epv} \\times ${p} = ${eMinC} 个事件$$
+
+**Step 3: 计算基础样本量**
+$$N_{base} = \\frac{E_{min}}{\\pi} = \\frac{${eMinC}}{${rate}} = ${nBaseC} 例$$
+
+**Step 4: 考虑脱落率**
+$$N_{final} = \\frac{N_{base}}{1 - r} = \\frac{${nBaseC}}{1 - ${dropoutPct}\\%} = ${fmtDec(nFinal, 2)} \\rightarrow ${nFinalC} 例
+
+---
+
+**说明**
+- EPV (Events Per Variable) 法则是传统经验法则
+- Peduzzi et al. (1996) 建议 EPV ≥ 10
+- Riley et al. (2019) 建议 EPV ≥ 20 以获得更稳定的模型`;
+
+  document.getElementById('epv_process').textContent = calcProcess;
 }
 
 /* ========================================
@@ -608,6 +839,44 @@ N₂ ≥ 20p / π = ${n2c}
 3. Van Smeden M, et al. No rationale for 1 variable per 10 events criterion. BMC Med Res Methodol. 2016;16:163.`;
 
   document.getElementById('riley_template').textContent = template;
+
+  // 计算过程
+  const calcProcess = `📋 **计算步骤详解**
+
+**Step 1: 设定参数**
+- 预测变量数 p = ${p}
+- 结局事件率 π = ${rate}
+- Nagelkerke R² = ${r2nagel}
+- 收缩因子 S = ${s}（推荐 ≥0.9）
+
+**Step 2: 计算 Cox-Snell R²**
+- R²_CS_max = 1 - π^(2π) × (1-π)^(2(1-π))
+  = 1 - ${rate}^(2×${rate}) × (1-${rate})^(2×${1-rate})
+  = 1 - ${fmtDec(Math.pow(rate, 2*rate), 6)} × ${fmtDec(Math.pow(1-rate, 2*(1-rate)), 6)}
+  = ${fmtDec(r2cs_max, 4)}
+
+- R²_CS = R²_Nagel × R²_CS_max
+  = ${r2nagel} × ${fmtDec(r2cs_max, 4)} = ${fmtDec(r2cs, 4)}
+
+**Step 3: 准则一（收缩因子控制）**
+$$N_1 \\geq \\frac{p}{(S-1) \\ln(1 - R^2_{CS}/S)}$$
+
+代入：R²_CS/S = ${fmtDec(r2cs,4)}/${s} = ${fmtDec(r2cs_s, 4)}
+ln(1 - ${fmtDec(r2cs_s,4)}) = ${fmtDec(Math.log(1-r2cs_s), 4)}
+N₁ = ${p} / [(${s}-1) × ${fmtDec(Math.log(1-r2cs_s),4)}] = ${n1c} 例
+
+**Step 4: 准则二（Harrell EPV≥20）**
+$$N_2 \\geq \\frac{20p}{\\pi} = \\frac{20 \\times ${p}}{${rate}} = ${n2c} 例
+
+**Step 5: 取较大值**
+- N₁ = ${n1c}，N₂ = ${n2c}
+- 最终建议 N = max(N₁, N₂) = ${nFinalC} 例
+
+**Step 6: 考虑脱落率**
+- 预期事件数 E = N × π = ${nFinalC} × ${rate} = ${eventsC} 个
+- 调整后样本量 = ${nFinalC} / (1 - ${dropoutPct}%) = ${fmtDec(nAdj, 2)} → ${nAdjC} 例`;
+
+  document.getElementById('riley_process').textContent = calcProcess;
 }
 
 /* ========================================
@@ -655,6 +924,35 @@ N ≥ p / (S × R²) + p + 1 = ${n1c}
 2. Harrell FE. Regression Modeling Strategies (2nd ed.). Springer, 2015.`;
 
   document.getElementById('cont_template').textContent = template;
+
+  // 计算过程
+  const calcProcess = `📋 **计算步骤详解**
+
+**Step 1: 设定参数**
+- 预测变量数 p = ${p}
+- 预期模型 R² = ${r2}
+- 收缩因子 S = ${s}（推荐 ≥0.9）
+- 显著性水平 α = ${alpha}
+
+**Step 2: 代入简化收缩因子公式**
+$$N \\geq \\frac{p}{S \\cdot R^2} + p + 1$$
+
+代入参数：
+$$N \\geq \\frac{${p}}{${s} \\times ${r2}} + ${p} + 1$$
+
+$$N \\geq \\frac{${p}}{${fmtDec(s*r2,4)}} + ${p+1} = ${fmtDec(n1, 2)} \\rightarrow ${n1c} 例$$
+
+**Step 3: 考虑脱落率**
+$$N_{final} = \\frac{N}{1 - r} = \\frac{${n1c}}{1 - ${dropoutPct}\\%} = ${fmtDec(nFinal, 2)} \\rightarrow ${nFinalC} 例
+
+---
+
+**说明**
+- 此为 Riley et al. (2019) 简化公式，适用于连续结局预测模型
+- 公式基于收缩因子控制过拟合的原理
+- S 越接近 1，对样本量要求越高`;
+
+  document.getElementById('cont_process').textContent = calcProcess;
 }
 
 /* ===== 初始化 ===== */

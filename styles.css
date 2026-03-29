@@ -500,6 +500,29 @@ body {
   font-style: italic;
 }
 
+/* ===== 计算过程 ===== */
+.process-card {
+  margin-top: 0;
+}
+
+.process-box {
+  background: var(--bg-formula);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text);
+  max-height: 500px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: 'Courier New', monospace;
+}
+
+.process-box .MathJax {
+  font-size: 0.95em;
+}
+
 /* ===== 论文模板 ===== */
 .template-card {
   margin-top: 0;
