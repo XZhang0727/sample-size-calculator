@@ -1,62 +1,62 @@
 /* ===================================
-   医学样本量计算器 - 优质样式
+   医学样本量计算器 - 中山大学护理学院主题
    =================================== */
 
 :root {
-  /* 亮色主题 */
-  --bg: #f0f4f8;
+  /* 亮色主题 - 绿色学院风格 */
+  --bg: #f4f9f5;
   --bg-card: #ffffff;
-  --bg-header: rgba(255,255,255,0.92);
-  --bg-formula: #f8faff;
-  --bg-result: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --bg-template: #f9fafb;
-  --text: #1a202c;
-  --text-muted: #718096;
-  --text-light: #a0aec0;
-  --border: #e2e8f0;
-  --border-focus: #667eea;
-  --accent: #667eea;
-  --accent2: #764ba2;
+  --bg-header: rgba(255,255,255,0.95);
+  --bg-formula: #f0f9f4;
+  --bg-result: linear-gradient(135deg, #2d8a5e 0%, #1a6b42 100%);
+  --bg-template: #f9fcfb;
+  --text: #1a2e1a;
+  --text-muted: #5a6b5a;
+  --text-light: #8a9a8a;
+  --border: #d4e5d9;
+  --border-focus: #2d8a5e;
+  --accent: #2d8a5e;
+  --accent2: #1a6b42;
   --accent-green: #48bb78;
   --accent-amber: #ed8936;
-  --shadow: 0 4px 20px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+  --shadow: 0 4px 20px rgba(45,138,94,0.1);
+  --shadow-lg: 0 8px 40px rgba(45,138,94,0.15);
   --radius: 14px;
   --radius-sm: 8px;
-  --nav-active: #667eea;
-  --nav-hover: #f0f4ff;
+  --nav-active: #2d8a5e;
+  --nav-hover: #e8f5ec;
   --result-text: #ffffff;
   --input-bg: #ffffff;
-  --tag-bg: #eef2ff;
-  --tag-text: #667eea;
-  --ref-bg: #fafbff;
+  --tag-bg: #e8f5ec;
+  --tag-text: #2d8a5e;
+  --ref-bg: #f8fdf9;
 }
 
 [data-theme="dark"] {
-  --bg: #0f1117;
-  --bg-card: #1a1d2e;
-  --bg-header: rgba(15,17,23,0.95);
-  --bg-formula: #12152a;
-  --bg-result: linear-gradient(135deg, #4c5eb8 0%, #5b3b8a 100%);
-  --bg-template: #12152a;
-  --text: #e2e8f0;
-  --text-muted: #94a3b8;
-  --text-light: #64748b;
-  --border: #2d3748;
-  --border-focus: #7c8fec;
-  --accent: #7c8fec;
-  --accent2: #9f75c4;
+  --bg: #0d1410;
+  --bg-card: #152119;
+  --bg-header: rgba(13,20,16,0.95);
+  --bg-formula: #0f1812;
+  --bg-result: linear-gradient(135deg, #3da870 0%, #258554 100%);
+  --bg-template: #0f1812;
+  --text: #e0ebe3;
+  --text-muted: #9ab09a;
+  --text-light: #6a806a;
+  --border: #1e3325;
+  --border-focus: #4cb880;
+  --accent: #4cb880;
+  --accent2: #3da870;
   --accent-green: #68d391;
   --accent-amber: #f6ad55;
   --shadow: 0 4px 20px rgba(0,0,0,0.4);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
-  --nav-active: #7c8fec;
-  --nav-hover: #1e2440;
+  --shadow-lg: 0 8px 40px rgba(45,138,94,0.3);
+  --nav-active: #4cb880;
+  --nav-hover: #1a2b20;
   --result-text: #ffffff;
-  --input-bg: #1e2235;
-  --tag-bg: #1e2440;
-  --tag-text: #7c8fec;
-  --ref-bg: #12152a;
+  --input-bg: #1a2820;
+  --tag-bg: #1a2b20;
+  --tag-text: #4cb880;
+  --ref-bg: #0f1812;
 }
 
 * {
@@ -107,19 +107,24 @@ body {
 }
 
 .logo-icon {
-  font-size: 28px;
-  background: var(--bg-result);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 2px 4px rgba(102,126,234,0.3));
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(45,138,94,0.3);
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
 }
 
 .logo-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--text);
+  color: var(--accent);
   white-space: nowrap;
+  letter-spacing: 0.5px;
 }
 
 .logo-subtitle {
@@ -160,7 +165,7 @@ body {
 .nav-btn.active {
   background: var(--accent);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(102,126,234,0.4);
+  box-shadow: 0 2px 8px rgba(45,138,94,0.4);
 }
 
 .theme-toggle {
@@ -211,7 +216,7 @@ body {
 .section-title {
   font-size: 24px;
   font-weight: 700;
-  background: var(--bg-result);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -255,7 +260,7 @@ body {
 .sub-btn.active {
   background: var(--accent);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(102,126,234,0.35);
+  box-shadow: 0 2px 8px rgba(45,138,94,0.35);
 }
 
 /* ===== 计算布局 ===== */
@@ -341,7 +346,7 @@ body {
 .param-item input:focus,
 .param-item select:focus {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(102,126,234,0.12);
+  box-shadow: 0 0 0 3px rgba(45,138,94,0.15);
 }
 
 .input-row {
@@ -552,7 +557,7 @@ body {
 .btn-copy:hover {
   background: var(--accent2);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+  box-shadow: 0 4px 12px rgba(45,138,94,0.4);
 }
 
 .btn-copy:active {
@@ -649,5 +654,5 @@ body {
 /* ===== MathJax 深色适配 ===== */
 [data-theme="dark"] .MJX-TEX,
 [data-theme="dark"] mjx-math {
-  color: #c9d4ff !important;
+  color: #b4e4c4 !important;
 }
