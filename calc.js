@@ -75,10 +75,17 @@ function animateNum(elId, val) {
 // ===== 导航切换 =====
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-selected', 'false');
+    b.removeAttribute('aria-current');
+  });
   document.getElementById(id).classList.add('active');
   const idx = ['rct','cross','cohort','casecontrol','prediction'].indexOf(id);
-  document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+  const activeBtn = document.querySelectorAll('.nav-btn')[idx];
+  activeBtn.classList.add('active');
+  activeBtn.setAttribute('aria-selected', 'true');
+  activeBtn.setAttribute('aria-current', 'page');
   // 触发对应计算
   setTimeout(() => {
     if (id === 'rct') { calcRCTMean(); calcRCTProp(); }
@@ -126,8 +133,21 @@ function copyTemplate(id) {
   const el = document.getElementById(id);
   if (!el) return;
   const text = el.innerText || el.textContent;
+
+  // 查找关联的复制按钮并添加反馈
+  const templateCard = el.closest('.template-card');
+  const btn = templateCard ? templateCard.querySelector('.btn-copy') : null;
+
   navigator.clipboard.writeText(text).then(() => {
     showToast('✅ 模板已复制到剪贴板');
+    if (btn) {
+      btn.classList.add('copied');
+      btn.textContent = '✅ 已复制';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = '📋 复制模板';
+      }, 1500);
+    }
   }).catch(() => {
     const ta = document.createElement('textarea');
     ta.value = text;
@@ -136,6 +156,14 @@ function copyTemplate(id) {
     document.execCommand('copy');
     document.body.removeChild(ta);
     showToast('✅ 模板已复制到剪贴板');
+    if (btn) {
+      btn.classList.add('copied');
+      btn.textContent = '✅ 已复制';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = '📋 复制模板';
+      }, 1500);
+    }
   });
 }
 
